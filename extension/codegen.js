@@ -182,11 +182,13 @@ const CodeGen = (() => {
     // ── Language generators ──────────────────────────────────────────────
 
     /**
-     * Generate a PowerShell script.
+     * Generate a PowerShell script using the Microsoft Graph PowerShell SDK.
      *
-     * Direct Graph API calls use Connect-MgGraph + Invoke-MgGraphRequest.
-     * Portal proxy calls use MSAL.PS token acquisition + Invoke-RestMethod
-     * against the equivalent Microsoft 365 Defender REST API.
+     * Uses `Connect-MgGraph` + `Invoke-MgGraphRequest` for both direct Graph
+     * API calls and Defender XDR portal proxy calls.  `Invoke-MgGraphRequest`
+     * accepts any `-Uri`, so it can also reach the Microsoft 365 Defender REST
+     * API at api.security.microsoft.com once a token with the correct scope is
+     * in place.
      *
      * @param {import('./panel.js').RequestEntry} req
      * @returns {string}
@@ -209,36 +211,19 @@ const CodeGen = (() => {
                 "# The script below targets the equivalent Microsoft 365 Defender REST API.",
                 "# Reference: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-supported",
                 "#",
-                "# Prerequisites",
-                "#   Install-Module MSAL.PS -Scope CurrentUser",
-                "",
-                "# Acquire a token for the Microsoft 365 Defender REST API.",
-                "Import-Module MSAL.PS",
-                "",
-                '$tokenResponse = Get-MsalToken `',
-                '    -TenantId "YOUR_TENANT_ID" `',
-                '    -ClientId "YOUR_CLIENT_ID" `',
-                '    -ClientSecret (ConvertTo-SecureString "YOUR_CLIENT_SECRET" -AsPlainText -Force) `',
-                '    -Scopes "https://api.security.microsoft.com/.default"',
-                "",
-                "$headers = @{",
-                '    Authorization = "Bearer $($tokenResponse.AccessToken)"',
-                '    "Content-Type" = "application/json"',
-                "}",
-                "",
-            );
-        } else {
-            lines.push(
-                "# Prerequisites",
-                "#   Install-Module Microsoft.Graph -Scope CurrentUser",
-                "",
-                "# Connect to Microsoft Graph (interactive, browser-based login).",
-                "# For unattended/app-only auth use:",
-                "#   Connect-MgGraph -TenantId <tenant-id> -ClientId <app-id> -CertificateThumbprint <thumb>",
-                "Connect-MgGraph",
-                "",
             );
         }
+
+        lines.push(
+            "# Prerequisites",
+            "#   Install-Module Microsoft.Graph -Scope CurrentUser",
+            "",
+            "# Connect to Microsoft Graph (interactive, browser-based login).",
+            "# For unattended/app-only auth use:",
+            "#   Connect-MgGraph -TenantId <tenant-id> -ClientId <app-id> -CertificateThumbprint <thumb>",
+            "Connect-MgGraph",
+            "",
+        );
 
         if (hasBody) {
             lines.push("# Request body");
@@ -247,27 +232,16 @@ const CodeGen = (() => {
         }
 
         lines.push(`# ${method} ${req.path || url}`);
+        lines.push(`$response = Invoke-MgGraphRequest \``);
+        lines.push(`    -Method ${method} \``);
+        lines.push(`    -Uri "${uri}" \``);
 
-        if (isProxy) {
-            lines.push(`$response = Invoke-RestMethod \``);
-            lines.push(`    -Method ${method} \``);
-            lines.push(`    -Uri "${uri}" \``);
-            lines.push(`    -Headers $headers \``);
-            if (hasBody) {
-                lines.push(`    -Body $body \``);
-            }
-            lines.push(`    -ErrorAction Stop`);
-        } else {
-            lines.push(`$response = Invoke-MgGraphRequest \``);
-            lines.push(`    -Method ${method} \``);
-            lines.push(`    -Uri "${uri}" \``);
-            if (hasBody) {
-                lines.push(`    -Body $body \``);
-                lines.push(`    -ContentType "application/json" \``);
-            }
-            lines.push(`    -OutputType PSObject`);
+        if (hasBody) {
+            lines.push(`    -Body $body \``);
+            lines.push(`    -ContentType "application/json" \``);
         }
 
+        lines.push(`    -OutputType PSObject`);
         lines.push("");
         lines.push("# Display the response");
         lines.push("$response | ConvertTo-Json -Depth 10");
