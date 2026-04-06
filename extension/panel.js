@@ -123,6 +123,20 @@
         entry.getContent(function (responseBody, _encoding) {
             const parsed = CodeGen.parseGraphUrl(url);
 
+            // For portal proxy calls, resolve the path against the known API
+            // mapping.  Skip calls that have no public API equivalent (portal-
+            // internal endpoints).
+            let publicApiUrl = null;
+            if (parsed.isProxy) {
+                const resolved = CodeGen.resolveProxyUrl(parsed.fullPath);
+                if (!resolved) return; // unmapped / portal-internal — ignore
+                // Append the original query string only when the resolved URL
+                // doesn't already carry its own (e.g. the Sentinel ARM URL).
+                publicApiUrl = resolved.includes("?")
+                    ? resolved
+                    : resolved + parsed.queryString;
+            }
+
             /** @type {RequestEntry} */
             const req = {
                 id:              captured.length + 1,
@@ -131,9 +145,7 @@
                 path:            parsed.fullPath + parsed.queryString,
                 version:         parsed.version,
                 isProxy:         parsed.isProxy,
-                publicApiUrl:    parsed.isProxy
-                                     ? "https://api.security.microsoft.com" + parsed.publicApiPath + parsed.queryString
-                                     : null,
+                publicApiUrl,
                 status:          entry.response.status,
                 statusText:      entry.response.statusText,
                 durationMs:      Math.round(entry.time),

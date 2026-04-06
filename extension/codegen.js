@@ -120,6 +120,111 @@ const CodeGen = (() => {
         };
     }
 
+    // ── Proxy-path mapping ───────────────────────────────────────────────
+
+    /**
+     * Mapping from Defender XDR portal proxy path patterns to their public
+     * Microsoft API equivalents.  Generated from research/api-mapping.json.
+     *
+     * Only proxy calls whose pathname matches one of these entries are captured
+     * by the extension.  Calls that match no entry are portal-internal and have
+     * no public API equivalent, so they are silently ignored.
+     *
+     * The `{id}` placeholder in `url` is replaced with the first regex capture
+     * group (the dynamic path segment) when resolving the full URL.
+     *
+     * @type {Array<{pattern: RegExp, url: string}>}
+     */
+    const PROXY_MAPPING = [
+        {
+            pattern: /^\/apiproxy\/mtp\/alertsApiService\/alerts$/,
+            url: "https://api.security.microsoft.com/api/alerts",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/alertsApiService\/alerts\/(?!count$)([^/]+)$/,
+            url: "https://api.security.microsoft.com/api/alerts/{id}",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/autoIr\/incidents\/([^/]+)/,
+            url: "https://api.security.microsoft.com/api/incidents/{id}",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/huntingService\/alerts\/([^/]+)\/actions$/,
+            url: "https://api.security.microsoft.com/api/alerts/{id}/actions",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/huntingService\/alerts\/([^/]+)\/rule$/,
+            url: "https://api.security.microsoft.com/api/customdetections",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/huntingService\/queryExecutor$/,
+            url: "https://api.security.microsoft.com/api/advancedqueries/run",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/huntingService\/rules\/byquery\/([^/]+)$/,
+            url: "https://api.security.microsoft.com/api/customdetections",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/huntingService\/schema$/,
+            url: "https://api.security.microsoft.com/api/advancedqueries/schema",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/incidentDevices\/incidents\/([^/]+)\/devices$/,
+            url: "https://api.security.microsoft.com/api/incidents/{id}/devices",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/incidentQueue\/incidents\/alerts$/,
+            url: "https://api.security.microsoft.com/api/alerts",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/incidentQueue\/incidents\/(?!count$)([^/]+)$/,
+            url: "https://api.security.microsoft.com/api/incidents/{id}",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/incidents\/([^/]+)\/AssociatedAlerts$/,
+            url: "https://api.security.microsoft.com/api/incidents/{id}/alerts",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/incidentUpdate\/incidents$/,
+            url: "https://api.security.microsoft.com/api/incidents",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/incidentUsers\/incidents\/([^/]+)\/users$/,
+            url: "https://api.security.microsoft.com/api/incidents/{id}/users",
+        },
+        {
+            pattern: /^\/apiproxy\/mtp\/ndr\/machines\/allMachinesTags$/,
+            url: "https://api.security.microsoft.com/api/machines/MachineTagsList",
+        },
+        {
+            pattern: /^\/apiproxy\/securityplatform\/sentinelgraph\/provisioning\/checkTenant$/,
+            url: "https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/onboardingStates/default?api-version=2024-01-01-preview",
+        },
+    ];
+
+    /**
+     * Resolve a Defender XDR portal proxy pathname to its public API URL.
+     *
+     * Iterates over {@link PROXY_MAPPING}.  Returns the resolved URL string
+     * (with the first capture group substituted for `{id}` when present), or
+     * `null` if the path is not in the known mapping (i.e. portal-internal,
+     * no public API equivalent).
+     *
+     * @param {string} proxyPathname  Full proxy pathname, e.g.
+     *   "/apiproxy/mtp/incidentUpdate/incidents"
+     * @returns {string|null}
+     */
+    function resolveProxyUrl(proxyPathname) {
+        for (const entry of PROXY_MAPPING) {
+            const m = proxyPathname.match(entry.pattern);
+            if (m) {
+                const id = m[1];
+                return id ? entry.url.replace("{id}", id) : entry.url;
+            }
+        }
+        return null;
+    }
+
     // ── String-escaping helpers ──────────────────────────────────────────
 
     /**
@@ -615,6 +720,7 @@ const CodeGen = (() => {
 
     return {
         generate,
-        parseGraphUrl,   // Exposed for unit tests
+        parseGraphUrl,    // Exposed for unit tests
+        resolveProxyUrl,  // Exposed for proxy-call filtering in panel.js
     };
 })();
