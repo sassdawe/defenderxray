@@ -1,0 +1,290 @@
+[
+  {
+    "proxyPathPattern": "^/apiproxy/cdssecuritycopilot/trial$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Internal Security Copilot (Medeina) licensing/trial check. The required OAuth scope is https://api.medeina.defender.microsoft.com/Medeina.Access, which is a private API surface. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtoapi/tenants/TenantPicker$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal multi-tenant UX picker used to switch between managed tenants. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/alertsApiService/alerts$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/alerts",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "Batch-update alert status, classification, or assigned user. Scope: Alert.ReadWrite. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-update-alerts. Graph beta alternative: PATCH https://graph.microsoft.com/beta/security/alerts_v2/{alertId}"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/alertsApiService/alerts/count$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal alert count aggregation used to populate queue badge counts. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/alertsApiService/alerts/[^/]+/context$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal alert enrichment endpoint (resolves related processes, files, and network connections displayed in the Defender XDR alert page). No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/alertsApiService/alerts/[^/]+/similarAlertsSummary$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal ML-generated similar-alerts summary card. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/alertsApiService/alerts/([^/]+)$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/alerts/{id}",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "Get a single alert by ID. Scope: Alert.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-get-alerts. Graph beta alternative: GET https://graph.microsoft.com/beta/security/alerts_v2/{alertId}"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/auditHistory/AuditHistory",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal incident/entity audit log (tracks status changes, assignment changes, and comments). No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/autoIr/incidents/([^/]+)",
+    "graphApiUrl": "https://api.security.microsoft.com/api/incidents/{id}",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "Automated Investigation & Response status for an incident. The portal-specific query params (useDotnetAutoIrUi, pageSize, pageIndex) are internal UI flags and must be omitted in public API calls. Scope: Incident.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-get-incident"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/CaseManagement/",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal unified investigation task/case management service. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/GAIAMedeinaApi/",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Internal Microsoft Security Copilot (Medeina/GAIA) guided-response service. Provides AI-generated similar-incident recommendations. No public API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/alerts/([^/]+)/actions$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/alerts/{id}/actions",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "Lists automated response actions (machine isolation, antivirus scan, etc.) taken against devices in relation to an alert. Scope: Alert.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-get-alert-related-actions"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/alerts/([^/]+)/queryResults$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal: retrieves the Advanced Hunting KQL query results row that triggered this alert. No direct public API equivalent. To reproduce, fetch the detection rule at https://api.security.microsoft.com/api/customdetections/{ruleId} and re-run its query via POST https://api.security.microsoft.com/api/advancedqueries/run."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/alerts/([^/]+)/rule$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/customdetections",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "Retrieves the custom detection rule that generated this alert. The portal fetches it inline using the alert ID; in the public API there is no /alerts/{id}/rule sub-resource. Instead: (1) GET https://api.security.microsoft.com/api/alerts/{alertId} and find the detectionSource ruleId, then (2) GET https://api.security.microsoft.com/api/customdetections/{ruleId}. Scope: CustomDetections.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-get-detection-rule"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/alerts/([^/]+)/timeline$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal MITRE ATT&CK timeline view for an alert (device/process events around the alert trigger time). No public API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/communityQueries$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal community query library loader. The underlying queries are publicly available at https://github.com/microsoft/Microsoft-365-Defender-Hunting-Queries but there is no API endpoint to retrieve them programmatically."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/documentation/",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal documentation endpoint that populates the Advanced Hunting help pane. Docs are publicly available at https://learn.microsoft.com/en-us/microsoft-365/security/defender/advanced-hunting-overview but there is no structured API to retrieve them."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/favorites",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal user-specific favorite query store for the Advanced Hunting UI. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/guidedQueries/filterSchema$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal Guided Hunting UI filter schema definition (drives the visual query builder dropdowns). No public API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/queries",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal saved/shared/scheduled query store. Scheduled queries (type=scheduled) that have been published as custom detection rules can be retrieved via GET https://api.security.microsoft.com/api/customdetections. Scope: CustomDetections.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-list-detection-rules. Shared and user-private saved queries have no public API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/queryExecutor$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/advancedqueries/run",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "Execute a KQL Advanced Hunting query. POST body: { \"Query\": \"<KQL>\" }. The portal param useFanOut is internal and must be omitted. Scope: AdvancedQuery.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-advanced-hunting. Graph beta alternative: POST https://graph.microsoft.com/beta/security/runHuntingQuery"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/reports/userHistory$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal Advanced Hunting usage telemetry (recently run queries). No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/rules/byquery/([^/]+)$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/customdetections",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "The portal looks up detection rules linked to a specific portal query ID (an internal numeric concept). The public API lists all custom detection rules and does not support lookup by portal query ID. Retrieve all rules at https://api.security.microsoft.com/api/customdetections and filter client-side. Scope: CustomDetections.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-list-detection-rules"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/schema/functions$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal Advanced Hunting schema KQL built-in functions list. No public API equivalent; KQL function reference is at https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/functions"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/huntingService/schema$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/advancedqueries/schema",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "Retrieve the Advanced Hunting schema (available tables and columns). Scope: AdvancedQuery.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-advanced-hunting"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/incidentDevices/incidents/([^/]+)/devices$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/incidents/{id}/devices",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "List devices involved in an incident. Scope: Incident.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-get-incident. Graph beta alternative: GET https://graph.microsoft.com/beta/security/incidents/{id}/devices"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/incidentQueue/incidents/alerts$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/alerts",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "The portal POSTs a filter body to retrieve alerts across multiple incidents in bulk. The public API does not expose a multi-incident bulk alerts endpoint. Use GET https://api.security.microsoft.com/api/alerts with OData filtering (e.g. $filter=incidentId eq {id}), or GET https://api.security.microsoft.com/api/incidents/{id}/alerts per incident. Scope: Alert.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-list-alerts"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/incidentQueue/incidents/count$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal incident count aggregation. No public API equivalent. As a workaround, use GET https://api.security.microsoft.com/api/incidents and count the response, or apply the same filters used in the portal POST body."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/incidentQueue/incidents/([^/]+)$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/incidents/{id}",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "Get a single incident by ID. Scope: Incident.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-get-incident. Graph beta alternative: GET https://graph.microsoft.com/beta/security/incidents/{id}"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/incidents/([^/]+)/AssociatedAlerts$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/incidents/{id}/alerts",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "List alerts associated with an incident. Note: the portal calls this sub-resource AssociatedAlerts; the correct public API sub-resource name is alerts. Also note: the extension's publicApiUrl for this path is incorrectly generated (strips 'incidents/' from the path); this graphApiUrl is the corrected form. Scope: Incident.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-get-incident. Graph beta alternative: GET https://graph.microsoft.com/beta/security/incidents/{id}/alerts"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/incidents/([^/]+)/outbreaks$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal: associates an incident with Threat Analytics outbreak/campaign intelligence entries. Also note: the extension's publicApiUrl for this path incorrectly strips 'incidents/' from the path. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/incidents/([^/]+)/riskfactors$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal ML-based risk factor scoring for an incident (used to populate attack complexity and scope indicators). Also note: the extension's publicApiUrl for this path incorrectly strips 'incidents/' from the path. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/incidents/dsiMessageBarIndicators$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal Dynamic Security Intelligence (DSI) message bar banner data (used to display advisory banners on the incidents page). No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/incidentUpdate/incidents$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/incidents",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "List/filter incidents. The portal uses POST with a filter body; the public API uses GET with OData query params ($filter, $top, $skip, $orderby). Scope: Incident.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-list-incidents. Graph beta alternative: GET https://graph.microsoft.com/beta/security/incidents"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/incidentUsers/incidents/([^/]+)/users$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/incidents/{id}/users",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "List users associated with an incident. The portal-specific params (serviceContext, lookBackInDays, pageIndex, pageSize) are portal UI params; the public API does not support them. Scope: Incident.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-get-incident. Graph beta alternative: GET https://graph.microsoft.com/beta/security/incidents/{id}/users"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/ndr/machines/allMachinesTags$",
+    "graphApiUrl": "https://api.security.microsoft.com/api/machines/MachineTagsList",
+    "graphApiVersion": "defender",
+    "graphApiNotes": "Retrieve all device tag values used across the tenant. Note: the portal uses allMachinesTags as the sub-path; the public MDE API uses MachineTagsList. Scope: Machine.Read. Ref: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-machine-tags"
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/phoenixValueReflectionApi/",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal XDR value/ROI metrics service ('Phoenix'). Returns disruption statistics and summary totals for security posture reporting shown on the Defender XDR overview page. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/suppressionRulesService/RulesCount$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal suppression rule count aggregation. Individual suppression (alert exclusion) rules can be managed via the Defender portal or SIEM connector exports, but there is no public REST endpoint to retrieve a count of alert suppression rules."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/threatAnalytics/outbreaks/changeCount$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal Threat Analytics outbreak change counter (number of new outbreaks affecting this tenant since the analyst's last visit). No public Microsoft API equivalent for this aggregated metric."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/unifiedActions/unifiedactions/Activities/([^/]+)$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal unified action/activity history for an incident. This endpoint returned HTTP 403 Forbidden in the captured session even under the same authentication context as other calls, suggesting it requires an additional role or is restricted to internal tenants. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/userExposedRbacGroups/UserExposedRbacGroups$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal RBAC device group visibility metadata for the authenticated user (determines which device groups are shown in the portal). No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/userPreferences/api/mgmt/userpreferencesservice/userPreference/advanced_hunting$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal per-feature user preference store for Advanced Hunting UI settings (column layout, time range, etc.). Note: the extension's publicApiUrl for this path incorrectly double-prefixes /api/api/. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/userPreferences/api/mgmt/userpreferencesservice/userPreference$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal global user preference store (portal-wide UI settings). Note: the extension's publicApiUrl for this path incorrectly double-prefixes /api/api/. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/useServiceBaseUrl/ine/evidenceapiservice/evidence/alert/([^/]+)$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal Incident Navigator Engine (INE) — evidence entities linked to an alert (files, processes, IPs, etc. shown in the alert evidence tab). No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/useServiceBaseUrl/ine/evidenceapiservice/evidence/incident/([^/]+)/count$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal INE — count of evidence entities associated with an incident. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/useServiceBaseUrl/ine/evidenceapiservice/evidence/incident/([^/]+)$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal INE — evidence entities associated with an incident (represented in the attack story/evidence tab). No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/mtp/useServiceBaseUrl/ine/incidentgraphservice/incidentGraph/([^/]+)$",
+    "graphApiUrl": null,
+    "graphApiVersion": "n/a",
+    "graphApiNotes": "Portal-internal INE — incident entity relationship graph used to render the Defender XDR attack story graph visualization. No public Microsoft API equivalent."
+  },
+  {
+    "proxyPathPattern": "^/apiproxy/securityplatform/sentinelgraph/provisioning/checkTenant$",
+    "graphApiUrl": "https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/onboardingStates/default?api-version=2024-01-01-preview",
+    "graphApiVersion": "sentinel",
+    "graphApiNotes": "Microsoft Sentinel workspace provisioning check (verifies whether Sentinel is enabled on the workspace and which features are active). Public equivalent is the Microsoft Sentinel ARM REST API. Auth scope: https://management.azure.com/.default. Ref: https://learn.microsoft.com/en-us/rest/api/securityinsights/onboarding-states. Note: the portal-internal api-version 2024-07-01 may not correspond to a stable public ARM API version; use 2024-01-01-preview or a later GA version."
+  }
+]
