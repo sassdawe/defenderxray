@@ -216,11 +216,10 @@ const CodeGen = (() => {
 
         lines.push(
             "# Prerequisites",
-            "#   Install-Module Microsoft.Graph -Scope CurrentUser",
+            "#   Install-Module Microsoft.Graph.Authentication -Scope CurrentUser",
+            "#   Install-Module Microsoft.Graph.Security -Scope CurrentUser",
             "",
-            "# Connect to Microsoft Graph (interactive, browser-based login).",
-            "# For unattended/app-only auth use:",
-            "#   Connect-MgGraph -TenantId <tenant-id> -ClientId <app-id> -CertificateThumbprint <thumb>",
+            "# Connect to Microsoft Graph using delegated (interactive) permissions.",
             "Connect-MgGraph",
             "",
         );

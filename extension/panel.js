@@ -52,6 +52,7 @@
     const captureLabel    = document.getElementById("capture-label");
     const btnClear        = document.getElementById("btn-clear");
     const btnExport       = document.getElementById("btn-export");
+    const btnExportLimited = document.getElementById("btn-export-limited");
     const requestCount    = document.getElementById("request-count");
 
     const emptyState      = document.getElementById("empty-state");
@@ -168,6 +169,7 @@
     });
 
     btnExport.addEventListener("click", exportToJson);
+    btnExportLimited.addEventListener("click", exportToJsonLimited);
 
     // ── Request table ────────────────────────────────────────────────────
 
@@ -342,6 +344,40 @@
 
         a.href     = url;
         a.download = `defender-xray-${timestamp()}.json`;
+        a.click();
+
+        URL.revokeObjectURL(url);
+    }
+
+    /**
+     * Download a limited subset of captured requests as a JSON file.
+     * Only includes: method, url, path, version, isProxy, publicApiUrl,
+     * status, statusText — useful for researching API usage and building
+     * an API translation layer.
+     */
+    function exportToJsonLimited() {
+        if (captured.length === 0) return;
+
+        const limited = captured.map(function (req) {
+            return {
+                method:       req.method,
+                url:          req.url,
+                path:         req.path,
+                version:      req.version,
+                isProxy:      req.isProxy,
+                publicApiUrl: req.publicApiUrl,
+                status:       req.status,
+                statusText:   req.statusText,
+            };
+        });
+
+        const data = JSON.stringify(limited, null, 2);
+        const blob = new Blob([data], { type: "application/json" });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement("a");
+
+        a.href     = url;
+        a.download = `defender-xray-limited-${timestamp()}.json`;
         a.click();
 
         URL.revokeObjectURL(url);
