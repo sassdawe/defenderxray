@@ -1,0 +1,466 @@
+/**
+ * codegen.js
+ *
+ * Pure code-generation utilities for Defender XRay.
+ *
+ * Converts a captured Microsoft Graph API request into a ready-to-run
+ * script in one of four languages / SDKs:
+ *
+ *   • PowerShell  – Microsoft Graph PowerShell SDK (Invoke-MgGraphRequest)
+ *   • Python      – requests library + MSAL authentication
+ *   • C#          – HttpClient + Azure.Identity (ClientSecretCredential)
+ *   • JavaScript  – Microsoft Graph JavaScript SDK + @azure/identity
+ *
+ * Each generator function receives a `RequestEntry` object (see panel.js)
+ * and returns a formatted, human-readable string ready to paste into an IDE.
+ *
+ * This file has no DOM dependencies and can be tested independently.
+ */
+
+/* exported CodeGen */
+const CodeGen = (() => {
+    "use strict";
+
+    // ── URL helpers ──────────────────────────────────────────────────────
+
+    /**
+     * Parse a Microsoft Graph API URL into its constituent parts.
+     *
+     * @param {string} rawUrl – Full URL, e.g.
+     *   "https://graph.microsoft.com/v1.0/users?$filter=startsWith(displayName,'A')"
+     * @returns {{
+     *   version: string,        // "v1.0" | "beta"
+     *   resourcePath: string,   // "/users"  (without version prefix)
+     *   fullPath: string,       // "/v1.0/users"
+     *   params: Record<string, string>,  // OData / query params
+     *   hasParams: boolean,
+     *   queryString: string     // "?$filter=..." (raw, already URL-encoded)
+     * }}
+     */
+    function parseGraphUrl(rawUrl) {
+        let urlObj;
+        try {
+            urlObj = new URL(rawUrl);
+        } catch {
+            // Fallback for malformed URLs
+            return {
+                version: "v1.0",
+                resourcePath: rawUrl,
+                fullPath: rawUrl,
+                params: {},
+                hasParams: false,
+                queryString: "",
+            };
+        }
+
+        const segments = urlObj.pathname.split("/").filter(Boolean);
+        // Typical shape: ["v1.0", "users", ...]  or  ["beta", "security", ...]
+        const version = segments[0] || "v1.0";
+        const resourcePath = "/" + segments.slice(1).join("/");
+        const fullPath = urlObj.pathname;
+
+        /** @type {Record<string, string>} */
+        const params = {};
+        urlObj.searchParams.forEach((v, k) => {
+            params[k] = v;
+        });
+
+        return {
+            version,
+            resourcePath,
+            fullPath,
+            params,
+            hasParams: urlObj.searchParams.size > 0,
+            queryString: urlObj.search, // e.g. "?$filter=..."
+        };
+    }
+
+    // ── String-escaping helpers ──────────────────────────────────────────
+
+    /**
+     * Escape a string for embedding inside a PowerShell double-quoted string.
+     * Escapes backticks, double-quotes, and dollar signs.
+     * @param {string} s
+     * @returns {string}
+     */
+    function escapePsDoubleQuoted(s) {
+        return s
+            .replace(/`/g, "``")       // backtick → ``
+            .replace(/"/g, '`"')       // " → `"
+            .replace(/\$/g, "`$");     // $ → `$  (prevents variable expansion)
+    }
+
+    /**
+     * Escape a string for embedding inside a Python double-quoted string.
+     * @param {string} s
+     * @returns {string}
+     */
+    function escapePyString(s) {
+        return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");
+    }
+
+    /**
+     * Escape a string for embedding inside a C# verbatim (@"…") string.
+     * In verbatim strings only the double-quote needs doubling.
+     * @param {string} s
+     * @returns {string}
+     */
+    function escapeCsVerbatim(s) {
+        return s.replace(/"/g, '""');
+    }
+
+    /**
+     * Escape a string for embedding inside a JavaScript template literal.
+     * @param {string} s
+     * @returns {string}
+     */
+    function escapeJsTemplate(s) {
+        return s.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${");
+    }
+
+    // ── Body helpers ─────────────────────────────────────────────────────
+
+    /**
+     * Try to pretty-print a JSON string; return the original string on failure.
+     * @param {string|null|undefined} raw
+     * @returns {string}
+     */
+    function prettyJson(raw) {
+        if (!raw) return "";
+        try {
+            return JSON.stringify(JSON.parse(raw), null, 4);
+        } catch {
+            return raw;
+        }
+    }
+
+    // ── Language generators ──────────────────────────────────────────────
+
+    /**
+     * Generate a Microsoft Graph PowerShell SDK script.
+     *
+     * Uses `Invoke-MgGraphRequest` which works for every Graph endpoint
+     * without requiring cmdlet-per-resource knowledge.
+     *
+     * @param {import('./panel.js').RequestEntry} req
+     * @returns {string}
+     */
+    function generatePowerShell(req) {
+        const { method, url, requestBody } = req;
+        const uri = escapePsDoubleQuoted(url);
+        const hasBody = !!requestBody && method !== "GET";
+
+        const lines = [
+            "# Generated by Defender XRay",
+            `# ${method} ${url}`,
+            "#",
+            "# Prerequisites",
+            "#   Install-Module Microsoft.Graph -Scope CurrentUser",
+            "",
+            "# Connect to Microsoft Graph (interactive, browser-based login).",
+            "# For unattended/app-only auth use:",
+            "#   Connect-MgGraph -TenantId <tenant-id> -ClientId <app-id> -CertificateThumbprint <thumb>",
+            "Connect-MgGraph",
+            "",
+        ];
+
+        if (hasBody) {
+            lines.push("# Request body");
+            lines.push(`$body = '${prettyJson(requestBody).replace(/'/g, "''")}'`);
+            lines.push("");
+        }
+
+        lines.push(`# ${method} ${req.path || url}`);
+        lines.push(`$response = Invoke-MgGraphRequest \``);
+        lines.push(`    -Method ${method} \``);
+        lines.push(`    -Uri "${uri}" \``);
+
+        if (hasBody) {
+            lines.push(`    -Body $body \``);
+            lines.push(`    -ContentType "application/json" \``);
+        }
+
+        lines.push(`    -OutputType PSObject`);
+        lines.push("");
+        lines.push("# Display the response");
+        lines.push("$response | ConvertTo-Json -Depth 10");
+
+        return lines.join("\n");
+    }
+
+    /**
+     * Generate a Python script using the `requests` library and MSAL for auth.
+     *
+     * @param {import('./panel.js').RequestEntry} req
+     * @returns {string}
+     */
+    function generatePython(req) {
+        const { method, url, requestBody } = req;
+        const parsed = parseGraphUrl(url);
+        const hasBody = !!requestBody && method !== "GET";
+
+        // Split query params into a separate dict for readability
+        const baseUrl = url.split("?")[0];
+        const paramEntries = Object.entries(parsed.params);
+
+        const lines = [
+            "# Generated by Defender XRay",
+            `# ${method} ${url}`,
+            "#",
+            "# Prerequisites",
+            "#   pip install requests msal",
+            "",
+            "import requests",
+            "import msal",
+            "",
+            "# ── Authentication ──────────────────────────────────────────",
+            "# Replace the placeholders below with your app registration details.",
+            '# Create an app at https://entra.microsoft.com > App registrations.',
+            'TENANT_ID     = "YOUR_TENANT_ID"',
+            'CLIENT_ID     = "YOUR_CLIENT_ID"',
+            'CLIENT_SECRET = "YOUR_CLIENT_SECRET"   # Use a certificate in production',
+            "",
+            "app = msal.ConfidentialClientApplication(",
+            "    CLIENT_ID,",
+            '    authority=f"https://login.microsoftonline.com/{TENANT_ID}",',
+            "    client_credential=CLIENT_SECRET,",
+            ")",
+            "",
+            "token_response = app.acquire_token_for_client(",
+            '    scopes=["https://graph.microsoft.com/.default"]',
+            ")",
+            'if "access_token" not in token_response:',
+            '    raise RuntimeError(f"Could not acquire token: {token_response}")',
+            "",
+            "headers = {",
+            '    "Authorization": f"Bearer {token_response[\'access_token\']}",',
+            '    "Content-Type": "application/json",',
+            "}",
+            "",
+            "# ── API call ─────────────────────────────────────────────────",
+        ];
+
+        if (paramEntries.length > 0) {
+            lines.push(`url = "${escapePyString(baseUrl)}"`);
+            lines.push("params = {");
+            for (const [k, v] of paramEntries) {
+                lines.push(`    "${escapePyString(k)}": "${escapePyString(v)}",`);
+            }
+            lines.push("}");
+        } else {
+            lines.push(`url = "${escapePyString(url)}"`);
+        }
+
+        if (hasBody) {
+            lines.push("");
+            lines.push("body = (");
+            // Indent body JSON by 4 spaces
+            const bodyStr = prettyJson(requestBody);
+            for (const line of bodyStr.split("\n")) {
+                lines.push(`    ${line}`);
+            }
+            lines.push(")");
+        }
+
+        lines.push("");
+        const pyMethod = method.toLowerCase();
+        const callArgs = paramEntries.length > 0 ? "url, headers=headers, params=params" : "url, headers=headers";
+
+        if (hasBody) {
+            lines.push(`response = requests.${pyMethod}(`);
+            lines.push(`    ${callArgs.replace("url, ", "url,\n    ")},`);
+            lines.push("    json=body,");
+            lines.push(")");
+        } else {
+            lines.push(`response = requests.${pyMethod}(${callArgs})`);
+        }
+
+        lines.push("");
+        lines.push("response.raise_for_status()");
+        lines.push("print(response.json())");
+
+        return lines.join("\n");
+    }
+
+    /**
+     * Generate a C# script using HttpClient and Azure.Identity for auth.
+     * Targets .NET 8 with top-level statements for brevity.
+     *
+     * @param {import('./panel.js').RequestEntry} req
+     * @returns {string}
+     */
+    function generateCSharp(req) {
+        const { method, url, requestBody } = req;
+        const hasBody = !!requestBody && method !== "GET";
+        const csMethod = method === "PATCH" ? "Patch" : _capitalize(method.toLowerCase());
+
+        const lines = [
+            "// Generated by Defender XRay",
+            `// ${method} ${url}`,
+            "//",
+            "// Prerequisites (NuGet packages)",
+            "//   dotnet add package Azure.Identity",
+            "//   dotnet add package System.Net.Http.Json",
+            "",
+            "using Azure.Core;",
+            "using Azure.Identity;",
+            "using System.Net.Http;",
+            "using System.Net.Http.Headers;",
+            "using System.Net.Http.Json;",
+            "using System.Text;",
+            "using System.Text.Json;",
+            "",
+            "// ── Authentication ──────────────────────────────────────────",
+            "// Replace the placeholders below with your app registration details.",
+            "// Create an app at https://entra.microsoft.com > App registrations.",
+            'var tenantId     = "YOUR_TENANT_ID";',
+            'var clientId     = "YOUR_CLIENT_ID";',
+            'var clientSecret = "YOUR_CLIENT_SECRET"; // Use a certificate in production',
+            "",
+            "var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);",
+            "var tokenRequest = new TokenRequestContext(",
+            '    new[] { "https://graph.microsoft.com/.default" }',
+            ");",
+            "var token = await credential.GetTokenAsync(tokenRequest);",
+            "",
+            "using var httpClient = new HttpClient();",
+            "httpClient.DefaultRequestHeaders.Authorization =",
+            '    new AuthenticationHeaderValue("Bearer", token.Token);',
+            "",
+            "// ── API call ─────────────────────────────────────────────────",
+            `var url = @"${escapeCsVerbatim(url)}";`,
+            "",
+        ];
+
+        if (hasBody) {
+            const bodyStr = prettyJson(requestBody);
+            lines.push(`var requestBody = @"${escapeCsVerbatim(bodyStr)}";`);
+            lines.push(`var content = new StringContent(requestBody, Encoding.UTF8, "application/json");`);
+            lines.push("");
+
+            if (method === "POST") {
+                lines.push("var response = await httpClient.PostAsync(url, content);");
+            } else if (method === "PUT") {
+                lines.push("var response = await httpClient.PutAsync(url, content);");
+            } else if (method === "PATCH") {
+                lines.push("var request = new HttpRequestMessage(HttpMethod.Patch, url) { Content = content };");
+                lines.push("var response = await httpClient.SendAsync(request);");
+            } else {
+                lines.push(`var response = await httpClient.${csMethod}Async(url, content);`);
+            }
+        } else if (method === "DELETE") {
+            lines.push("var response = await httpClient.DeleteAsync(url);");
+        } else {
+            lines.push("var response = await httpClient.GetAsync(url);");
+        }
+
+        lines.push("response.EnsureSuccessStatusCode();");
+        lines.push("");
+        lines.push("var responseBody = await response.Content.ReadAsStringAsync();");
+        lines.push(
+            "var formatted = JsonSerializer.Serialize(",
+            "    JsonSerializer.Deserialize<JsonElement>(responseBody),",
+            '    new JsonSerializerOptions { WriteIndented = true }',
+            ");",
+        );
+        lines.push("Console.WriteLine(formatted);");
+
+        return lines.join("\n");
+    }
+
+    /**
+     * Generate a JavaScript script using the Microsoft Graph JavaScript SDK.
+     *
+     * @param {import('./panel.js').RequestEntry} req
+     * @returns {string}
+     */
+    function generateJavaScript(req) {
+        const { method, url, requestBody } = req;
+        const parsed = parseGraphUrl(url);
+        // The Graph JS SDK's .api() accepts the path relative to graph.microsoft.com
+        const apiPath = escapeJsTemplate(parsed.fullPath + parsed.queryString);
+        const hasBody = !!requestBody && method !== "GET";
+
+        const lines = [
+            "// Generated by Defender XRay",
+            `// ${method} ${url}`,
+            "//",
+            "// Prerequisites (npm packages)",
+            "//   npm install @microsoft/microsoft-graph-client",
+            "//   npm install @azure/identity",
+            "//   npm install @microsoft/microsoft-graph-client/authProviders/azureTokenCredentials",
+            "",
+            'import { Client } from "@microsoft/microsoft-graph-client";',
+            'import { ClientSecretCredential } from "@azure/identity";',
+            'import { TokenCredentialAuthenticationProvider }',
+            '    from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials";',
+            "",
+            "// ── Authentication ──────────────────────────────────────────",
+            "// Replace the placeholders below with your app registration details.",
+            "// Create an app at https://entra.microsoft.com > App registrations.",
+            'const tenantId     = "YOUR_TENANT_ID";',
+            'const clientId     = "YOUR_CLIENT_ID";',
+            'const clientSecret = "YOUR_CLIENT_SECRET"; // Use a certificate in production',
+            "",
+            "const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);",
+            "const authProvider = new TokenCredentialAuthenticationProvider(credential, {",
+            '    scopes: ["https://graph.microsoft.com/.default"],',
+            "});",
+            "const client = Client.initWithMiddleware({ authProvider });",
+            "",
+            "// ── API call ─────────────────────────────────────────────────",
+        ];
+
+        if (hasBody) {
+            lines.push("const body = " + prettyJson(requestBody) + ";");
+            lines.push("");
+        }
+
+        const jsMethod = method.toLowerCase();
+
+        if (hasBody) {
+            lines.push(`const result = await client.api(\`${apiPath}\`).${jsMethod}(body);`);
+        } else if (method === "DELETE") {
+            lines.push(`await client.api(\`${apiPath}\`).delete();`);
+            lines.push("console.log('Deleted successfully');");
+            return lines.join("\n");
+        } else {
+            lines.push(`const result = await client.api(\`${apiPath}\`).get();`);
+        }
+
+        lines.push("console.log(JSON.stringify(result, null, 2));");
+
+        return lines.join("\n");
+    }
+
+    // ── Private utilities ────────────────────────────────────────────────
+
+    /** Capitalise the first character of a string. */
+    function _capitalize(s) {
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    // ── Public API ───────────────────────────────────────────────────────
+
+    /**
+     * Generate a code snippet for the given request and language.
+     *
+     * @param {import('./panel.js').RequestEntry} req
+     * @param {"powershell"|"python"|"csharp"|"javascript"} language
+     * @returns {string} The generated code snippet as a plain string.
+     */
+    function generate(req, language) {
+        switch (language) {
+            case "powershell":  return generatePowerShell(req);
+            case "python":      return generatePython(req);
+            case "csharp":      return generateCSharp(req);
+            case "javascript":  return generateJavaScript(req);
+            default:            return `// Unsupported language: ${language}`;
+        }
+    }
+
+    return {
+        generate,
+        parseGraphUrl,   // Exposed for unit tests
+    };
+})();
