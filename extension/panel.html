@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<!--
+  panel.html
+  The main UI for the Defender XRay DevTools panel.
+
+  Layout
+  ──────
+  ┌─[ Toolbar ]──────────────────────────────────────────────────┐
+  │  ● Recording  │ ⊘ Clear │  N requests  │          [Export]  │
+  ├─[ Request List ]──────────────┬─[ Details Pane ]─────────────┤
+  │  Method │ Path          │ St  │  [Overview][Request][Response]│
+  │  GET    │ /v1.0/users   │ 200 │  [Code]                      │
+  │  POST   │ /v1.0/groups  │ 201 │  (tab content)               │
+  │  …      │ …             │ …   │                              │
+  └───────────────────────────────┴──────────────────────────────┘
+
+  Scripts loaded at the bottom of <body>:
+    codegen.js  – pure code-generation utilities (no DOM dependency)
+    panel.js    – UI logic, network listener, event handlers
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defender XRay</title>
+    <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+
+    <!-- ── Toolbar ────────────────────────────────────────────── -->
+    <div id="toolbar">
+        <button id="btn-capture" class="toolbar-btn active" title="Toggle capture on/off">
+            <span class="record-dot" aria-hidden="true"></span>
+            <span id="capture-label">Recording</span>
+        </button>
+
+        <div class="toolbar-divider" aria-hidden="true"></div>
+
+        <button id="btn-clear" class="toolbar-btn" title="Clear all captured requests">
+            Clear
+        </button>
+
+        <div class="toolbar-divider" aria-hidden="true"></div>
+
+        <span id="request-count" aria-live="polite">0 requests</span>
+
+        <span class="toolbar-spacer" aria-hidden="true"></span>
+
+        <button id="btn-export" class="toolbar-btn" title="Export all captured requests as JSON">
+            Export all
+        </button>
+
+        <button id="btn-export-limited" class="toolbar-btn" title="Export limited request metadata as JSON">
+            Export limited
+        </button>
+    </div>
+
+    <!-- ── Main: split pane ──────────────────────────────────── -->
+    <div id="main">
+
+        <!-- Left: Request list ──────────────────────────────── -->
+        <div id="request-list-pane" role="region" aria-label="Captured requests">
+
+            <!-- Empty state shown when no requests have been captured -->
+            <div id="empty-state" aria-live="polite">
+                <p class="empty-title">No Graph API calls captured yet.</p>
+                <p class="empty-hint">
+                    Open
+                    <a href="https://security.microsoft.com" target="_blank" rel="noopener">
+                        Defender XDR
+                    </a>
+                    in this tab (or navigate around the portal) while DevTools is open,
+                    and Graph API calls will appear here automatically.
+                </p>
+            </div>
+
+            <!-- Table of captured requests (hidden until first request arrives) -->
+            <table id="request-table" hidden aria-label="Graph API requests">
+                <thead>
+                    <tr>
+                        <th class="col-method" scope="col">Method</th>
+                        <th class="col-path"   scope="col">Path</th>
+                        <th class="col-status" scope="col">Status</th>
+                        <th class="col-time"   scope="col">Time (ms)</th>
+                    </tr>
+                </thead>
+                <tbody id="request-tbody">
+                    <!-- Rows added dynamically by panel.js -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Drag handle for resizing the two panes -->
+        <div id="resizer" role="separator" aria-label="Resize panels" tabindex="0"></div>
+
+        <!-- Right: Details pane ─────────────────────────────── -->
+        <div id="details-pane" role="region" aria-label="Request details">
+
+            <!-- Placeholder shown when no row is selected -->
+            <div id="details-placeholder">
+                <p>← Select a request to view details</p>
+            </div>
+
+            <!-- Details content (shown when a row is selected) -->
+            <div id="details-content" hidden>
+
+                <!-- Tab bar -->
+                <div id="tab-bar" role="tablist">
+                    <button class="tab active" data-tab="overview"
+                            role="tab" aria-selected="true"  aria-controls="tab-overview">
+                        Overview
+                    </button>
+                    <button class="tab" data-tab="request"
+                            role="tab" aria-selected="false" aria-controls="tab-request">
+                        Request
+                    </button>
+                    <button class="tab" data-tab="response"
+                            role="tab" aria-selected="false" aria-controls="tab-response">
+                        Response
+                    </button>
+                    <button class="tab" data-tab="code"
+                            role="tab" aria-selected="false" aria-controls="tab-code">
+                        Code
+                    </button>
+                </div>
+
+                <!-- ── Tab: Overview ──────────────────────────── -->
+                <div id="tab-overview" class="tab-content active" role="tabpanel">
+                    <table class="kv-table">
+                        <tbody>
+                            <tr>
+                                <th scope="row">URL</th>
+                                <td><span id="ov-url" class="wrap-all"></span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Method</th>
+                                <td><span id="ov-method"></span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Status</th>
+                                <td><span id="ov-status"></span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Duration</th>
+                                <td><span id="ov-time"></span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">API Version</th>
+                                <td><span id="ov-version"></span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Started</th>
+                                <td><span id="ov-started"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ── Tab: Request ───────────────────────────── -->
+                <div id="tab-request" class="tab-content" role="tabpanel" hidden>
+                    <h3 class="section-heading">Headers</h3>
+                    <pre id="req-headers" class="code-block"><code></code></pre>
+                    <h3 class="section-heading">Body</h3>
+                    <pre id="req-body" class="code-block"><code></code></pre>
+                </div>
+
+                <!-- ── Tab: Response ──────────────────────────── -->
+                <div id="tab-response" class="tab-content" role="tabpanel" hidden>
+                    <h3 class="section-heading">Headers</h3>
+                    <pre id="res-headers" class="code-block"><code></code></pre>
+                    <h3 class="section-heading">Body</h3>
+                    <pre id="res-body" class="code-block"><code></code></pre>
+                </div>
+
+                <!-- ── Tab: Code ──────────────────────────────── -->
+                <div id="tab-code" class="tab-content" role="tabpanel" hidden>
+                    <div class="code-controls">
+                        <label for="language-select" class="sr-only">Language</label>
+                        <select id="language-select" title="Select target language">
+                            <option value="powershell">PowerShell (Microsoft Graph SDK)</option>
+                            <option value="python">Python (requests + MSAL)</option>
+                            <option value="csharp">C# (Azure.Identity + HttpClient)</option>
+                            <option value="javascript">JavaScript (Graph JS SDK)</option>
+                        </select>
+                        <button id="btn-copy" title="Copy generated code to clipboard">
+                            Copy
+                        </button>
+                    </div>
+                    <pre id="code-output" class="code-block"><code id="code-content"></code></pre>
+                </div>
+
+            </div><!-- /details-content -->
+        </div><!-- /details-pane -->
+
+    </div><!-- /main -->
+
+    <!-- Scripts: codegen must load before panel -->
+    <script src="codegen.js"></script>
+    <script src="panel.js"></script>
+</body>
+</html>

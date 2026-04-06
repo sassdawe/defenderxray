@@ -1,0 +1,702 @@
+[
+  {
+    "method": "GET",
+    "url": "https://graph.microsoft.com/v1.0/users/skills@kolislab.io/photo/$value",
+    "path": "/v1.0/users/skills@kolislab.io/photo/$value",
+    "version": "v1.0",
+    "isProxy": false,
+    "publicApiUrl": null,
+    "status": 304,
+    "statusText": "Not Modified"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/cdssecuritycopilot/trial?scope=https:%2F%2Fapi.medeina.defender.microsoft.com%2FMedeina.Access",
+    "path": "/apiproxy/cdssecuritycopilot/trial?scope=https:%2F%2Fapi.medeina.defender.microsoft.com%2FMedeina.Access",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/?scope=https:%2F%2Fapi.medeina.defender.microsoft.com%2FMedeina.Access",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtoapi/tenants/TenantPicker",
+    "path": "/apiproxy/mtoapi/tenants/TenantPicker",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/TenantPicker",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "PATCH",
+    "url": "https://security.microsoft.com/apiproxy/mtp/alertsApiService/alerts",
+    "path": "/apiproxy/mtp/alertsApiService/alerts",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/alerts",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/alertsApiService/alerts/count",
+    "path": "/apiproxy/mtp/alertsApiService/alerts/count",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/alerts/count",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/alertsApiService/alerts/ea639034092509806483_-1906013526?",
+    "path": "/apiproxy/mtp/alertsApiService/alerts/ea639034092509806483_-1906013526",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/alerts/ea639034092509806483_-1906013526",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/alertsApiService/alerts/ea639034092509806483_-1906013526/context",
+    "path": "/apiproxy/mtp/alertsApiService/alerts/ea639034092509806483_-1906013526/context",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/alerts/ea639034092509806483_-1906013526/context",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/alertsApiService/alerts/ea639034092509806483_-1906013526/similarAlertsSummary",
+    "path": "/apiproxy/mtp/alertsApiService/alerts/ea639034092509806483_-1906013526/similarAlertsSummary",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/alerts/ea639034092509806483_-1906013526/similarAlertsSummary",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/auditHistory/AuditHistory?entityType=IncidentEntity&id=33&auditType=0&contentTypes%5B%5D=All&incidentSourceAudits=All&pageIndex=1&pageSize=500",
+    "path": "/apiproxy/mtp/auditHistory/AuditHistory?entityType=IncidentEntity&id=33&auditType=0&contentTypes%5B%5D=All&incidentSourceAudits=All&pageIndex=1&pageSize=500",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/AuditHistory?entityType=IncidentEntity&id=33&auditType=0&contentTypes%5B%5D=All&incidentSourceAudits=All&pageIndex=1&pageSize=500",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/auditHistory/AuditHistory?entityType=IncidentEntity&id=33&pageIndex=1&pageSize=100",
+    "path": "/apiproxy/mtp/auditHistory/AuditHistory?entityType=IncidentEntity&id=33&pageIndex=1&pageSize=100",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/AuditHistory?entityType=IncidentEntity&id=33&pageIndex=1&pageSize=100",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/auditHistory/AuditHistory?entityType=IncidentEntity&id=34&auditType=0&contentTypes%5B%5D=All&incidentSourceAudits=All&pageIndex=1&pageSize=500",
+    "path": "/apiproxy/mtp/auditHistory/AuditHistory?entityType=IncidentEntity&id=34&auditType=0&contentTypes%5B%5D=All&incidentSourceAudits=All&pageIndex=1&pageSize=500",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/AuditHistory?entityType=IncidentEntity&id=34&auditType=0&contentTypes%5B%5D=All&incidentSourceAudits=All&pageIndex=1&pageSize=500",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/auditHistory/AuditHistory?entityType=IncidentEntity&id=34&pageIndex=1&pageSize=100",
+    "path": "/apiproxy/mtp/auditHistory/AuditHistory?entityType=IncidentEntity&id=34&pageIndex=1&pageSize=100",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/AuditHistory?entityType=IncidentEntity&id=34&pageIndex=1&pageSize=100",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/autoIr/incidents/33/?pageSize=1&pageIndex=1&IncidentId=33&useDotnetAutoIrUi=false",
+    "path": "/apiproxy/mtp/autoIr/incidents/33/?pageSize=1&pageIndex=1&IncidentId=33&useDotnetAutoIrUi=false",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/incidents/33?pageSize=1&pageIndex=1&IncidentId=33&useDotnetAutoIrUi=false",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/autoIr/incidents/34/?pageSize=1&pageIndex=1&IncidentId=34&useDotnetAutoIrUi=false",
+    "path": "/apiproxy/mtp/autoIr/incidents/34/?pageSize=1&pageIndex=1&IncidentId=34&useDotnetAutoIrUi=false",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/incidents/34?pageSize=1&pageIndex=1&IncidentId=34&useDotnetAutoIrUi=false",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/CaseManagement/be/tasks?origin.type=incident&origin.id=33",
+    "path": "/apiproxy/mtp/CaseManagement/be/tasks?origin.type=incident&origin.id=33",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/be/tasks?origin.type=incident&origin.id=33",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/CaseManagement/be/tasks?origin.type=incident&origin.id=34",
+    "path": "/apiproxy/mtp/CaseManagement/be/tasks?origin.type=incident&origin.id=34",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/be/tasks?origin.type=incident&origin.id=34",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/GAIAMedeinaApi/skills/guidedresponse/33/similarIncidents",
+    "path": "/apiproxy/mtp/GAIAMedeinaApi/skills/guidedresponse/33/similarIncidents",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/skills/guidedresponse/33/similarIncidents",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/GAIAMedeinaApi/skills/guidedresponse/34/similarIncidents",
+    "path": "/apiproxy/mtp/GAIAMedeinaApi/skills/guidedresponse/34/similarIncidents",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/skills/guidedresponse/34/similarIncidents",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/alerts/ea639034092509806483_-1906013526/actions?alertId=ea639034092509806483_-1906013526",
+    "path": "/apiproxy/mtp/huntingService/alerts/ea639034092509806483_-1906013526/actions?alertId=ea639034092509806483_-1906013526",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/alerts/ea639034092509806483_-1906013526/actions?alertId=ea639034092509806483_-1906013526",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/alerts/ea639034092509806483_-1906013526/queryResults?alertId=ea639034092509806483_-1906013526",
+    "path": "/apiproxy/mtp/huntingService/alerts/ea639034092509806483_-1906013526/queryResults?alertId=ea639034092509806483_-1906013526",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/alerts/ea639034092509806483_-1906013526/queryResults?alertId=ea639034092509806483_-1906013526",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/alerts/ea639034092509806483_-1906013526/rule?alertId=ea639034092509806483_-1906013526&pageIndex=1&pageSize=undefined",
+    "path": "/apiproxy/mtp/huntingService/alerts/ea639034092509806483_-1906013526/rule?alertId=ea639034092509806483_-1906013526&pageIndex=1&pageSize=undefined",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/alerts/ea639034092509806483_-1906013526/rule?alertId=ea639034092509806483_-1906013526&pageIndex=1&pageSize=undefined",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/alerts/ea639034092509806483_-1906013526/timeline?correlationId=0ecf7150-abd8-4633-9d2d-e11c4fe68460",
+    "path": "/apiproxy/mtp/huntingService/alerts/ea639034092509806483_-1906013526/timeline?correlationId=0ecf7150-abd8-4633-9d2d-e11c4fe68460",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/alerts/ea639034092509806483_-1906013526/timeline?correlationId=0ecf7150-abd8-4633-9d2d-e11c4fe68460",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/communityQueries?type=community",
+    "path": "/apiproxy/mtp/huntingService/communityQueries?type=community",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/communityQueries?type=community",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/documentation/GettingStarted",
+    "path": "/apiproxy/mtp/huntingService/documentation/GettingStarted",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/documentation/GettingStarted",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/documentation/GuidedHuntingGettingStarted",
+    "path": "/apiproxy/mtp/huntingService/documentation/GuidedHuntingGettingStarted",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/documentation/GuidedHuntingGettingStarted",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/favorites",
+    "path": "/apiproxy/mtp/huntingService/favorites",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/favorites",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/favorites?tenantIds%5B%5D=cc140c86-814b-4468-b4f4-b4147ab5fe25",
+    "path": "/apiproxy/mtp/huntingService/favorites?tenantIds%5B%5D=cc140c86-814b-4468-b4f4-b4147ab5fe25",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/favorites?tenantIds%5B%5D=cc140c86-814b-4468-b4f4-b4147ab5fe25",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/guidedQueries/filterSchema",
+    "path": "/apiproxy/mtp/huntingService/guidedQueries/filterSchema",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/guidedQueries/filterSchema",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/queries/?type=scheduled",
+    "path": "/apiproxy/mtp/huntingService/queries/?type=scheduled",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/queries?type=scheduled",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/queries/?type=shared",
+    "path": "/apiproxy/mtp/huntingService/queries/?type=shared",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/queries?type=shared",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/queries/?type=user",
+    "path": "/apiproxy/mtp/huntingService/queries/?type=user",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/queries?type=user",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/queries/30002",
+    "path": "/apiproxy/mtp/huntingService/queries/30002",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/queries/30002",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/queries/defender/savedqueries/30002?queryId=30002",
+    "path": "/apiproxy/mtp/huntingService/queries/defender/savedqueries/30002?queryId=30002",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/queries/defender/savedqueries/30002?queryId=30002",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/queryExecutor?useFanOut=false",
+    "path": "/apiproxy/mtp/huntingService/queryExecutor?useFanOut=false",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/queryExecutor?useFanOut=false",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/reports/userHistory",
+    "path": "/apiproxy/mtp/huntingService/reports/userHistory",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/reports/userHistory",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/rules/byquery/30002?tenantIds=cc140c86-814b-4468-b4f4-b4147ab5fe25",
+    "path": "/apiproxy/mtp/huntingService/rules/byquery/30002?tenantIds=cc140c86-814b-4468-b4f4-b4147ab5fe25",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/rules/byquery/30002?tenantIds=cc140c86-814b-4468-b4f4-b4147ab5fe25",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/schema",
+    "path": "/apiproxy/mtp/huntingService/schema",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/schema",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/huntingService/schema/functions",
+    "path": "/apiproxy/mtp/huntingService/schema/functions",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/schema/functions",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidentDevices/incidents/34/devices?IncidentId=34&pageIndex=1&pageSize=30&sortByField=riskscore&sortOrder=Ascending",
+    "path": "/apiproxy/mtp/incidentDevices/incidents/34/devices?IncidentId=34&pageIndex=1&pageSize=30&sortByField=riskscore&sortOrder=Ascending",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/incidents/34/devices?IncidentId=34&pageIndex=1&pageSize=30&sortByField=riskscore&sortOrder=Ascending",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidentQueue/incidents/33",
+    "path": "/apiproxy/mtp/incidentQueue/incidents/33",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/incidents/33",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidentQueue/incidents/34?",
+    "path": "/apiproxy/mtp/incidentQueue/incidents/34",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/incidents/34",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidentQueue/incidents/alerts",
+    "path": "/apiproxy/mtp/incidentQueue/incidents/alerts",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/incidents/alerts",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidentQueue/incidents/count",
+    "path": "/apiproxy/mtp/incidentQueue/incidents/count",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/incidents/count",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidents/33/AssociatedAlerts?incidentId=33",
+    "path": "/apiproxy/mtp/incidents/33/AssociatedAlerts?incidentId=33",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/33/AssociatedAlerts?incidentId=33",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidents/33/outbreaks?incidentId=33",
+    "path": "/apiproxy/mtp/incidents/33/outbreaks?incidentId=33",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/33/outbreaks?incidentId=33",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidents/33/riskfactors",
+    "path": "/apiproxy/mtp/incidents/33/riskfactors",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/33/riskfactors",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidents/34/AssociatedAlerts?incidentId=34",
+    "path": "/apiproxy/mtp/incidents/34/AssociatedAlerts?incidentId=34",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/34/AssociatedAlerts?incidentId=34",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidents/34/outbreaks?incidentId=34",
+    "path": "/apiproxy/mtp/incidents/34/outbreaks?incidentId=34",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/34/outbreaks?incidentId=34",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidents/34/riskfactors",
+    "path": "/apiproxy/mtp/incidents/34/riskfactors",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/34/riskfactors",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidents/dsiMessageBarIndicators",
+    "path": "/apiproxy/mtp/incidents/dsiMessageBarIndicators",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/dsiMessageBarIndicators",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidentUpdate/incidents?tenantIds=null",
+    "path": "/apiproxy/mtp/incidentUpdate/incidents?tenantIds=null",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/incidents?tenantIds=null",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/incidentUsers/incidents/34/users/?id=34&serviceContext=Mtp&lookBackInDays=180&pageIndex=1&pageSize=30",
+    "path": "/apiproxy/mtp/incidentUsers/incidents/34/users/?id=34&serviceContext=Mtp&lookBackInDays=180&pageIndex=1&pageSize=30",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/incidents/34/users?id=34&serviceContext=Mtp&lookBackInDays=180&pageIndex=1&pageSize=30",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/ndr/machines/allMachinesTags",
+    "path": "/apiproxy/mtp/ndr/machines/allMachinesTags",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/machines/allMachinesTags",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/phoenixValueReflectionApi/disrupt?lookbackDays=30",
+    "path": "/apiproxy/mtp/phoenixValueReflectionApi/disrupt?lookbackDays=30",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/disrupt?lookbackDays=30",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/phoenixValueReflectionApi/summary/total?lookbackDays=30",
+    "path": "/apiproxy/mtp/phoenixValueReflectionApi/summary/total?lookbackDays=30",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/summary/total?lookbackDays=30",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/suppressionRulesService/RulesCount?lookingBackInDays=365&ruleSource=1",
+    "path": "/apiproxy/mtp/suppressionRulesService/RulesCount?lookingBackInDays=365&ruleSource=1",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/RulesCount?lookingBackInDays=365&ruleSource=1",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/threatAnalytics/outbreaks/changeCount",
+    "path": "/apiproxy/mtp/threatAnalytics/outbreaks/changeCount",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/outbreaks/changeCount",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/unifiedActions/unifiedactions/Activities/33",
+    "path": "/apiproxy/mtp/unifiedActions/unifiedactions/Activities/33",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/unifiedactions/Activities/33",
+    "status": 403,
+    "statusText": "Forbidden"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/unifiedActions/unifiedactions/Activities/34",
+    "path": "/apiproxy/mtp/unifiedActions/unifiedactions/Activities/34",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/unifiedactions/Activities/34",
+    "status": 403,
+    "statusText": "Forbidden"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/userExposedRbacGroups/UserExposedRbacGroups",
+    "path": "/apiproxy/mtp/userExposedRbacGroups/UserExposedRbacGroups",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/UserExposedRbacGroups",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "PATCH",
+    "url": "https://security.microsoft.com/apiproxy/mtp/userPreferences/api/mgmt/userpreferencesservice/userPreference",
+    "path": "/apiproxy/mtp/userPreferences/api/mgmt/userpreferencesservice/userPreference",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/api/mgmt/userpreferencesservice/userPreference",
+    "status": 204,
+    "statusText": "No Content"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/userPreferences/api/mgmt/userpreferencesservice/userPreference/advanced_hunting",
+    "path": "/apiproxy/mtp/userPreferences/api/mgmt/userpreferencesservice/userPreference/advanced_hunting",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/api/mgmt/userpreferencesservice/userPreference/advanced_hunting",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/useServiceBaseUrl/ine/evidenceapiservice/evidence/alert/ea639034092509806483_-1906013526",
+    "path": "/apiproxy/mtp/useServiceBaseUrl/ine/evidenceapiservice/evidence/alert/ea639034092509806483_-1906013526",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/ine/evidenceapiservice/evidence/alert/ea639034092509806483_-1906013526",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/useServiceBaseUrl/ine/evidenceapiservice/evidence/incident/33",
+    "path": "/apiproxy/mtp/useServiceBaseUrl/ine/evidenceapiservice/evidence/incident/33",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/ine/evidenceapiservice/evidence/incident/33",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/useServiceBaseUrl/ine/evidenceapiservice/evidence/incident/33/count",
+    "path": "/apiproxy/mtp/useServiceBaseUrl/ine/evidenceapiservice/evidence/incident/33/count",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/ine/evidenceapiservice/evidence/incident/33/count",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/useServiceBaseUrl/ine/evidenceapiservice/evidence/incident/34",
+    "path": "/apiproxy/mtp/useServiceBaseUrl/ine/evidenceapiservice/evidence/incident/34",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/ine/evidenceapiservice/evidence/incident/34",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/mtp/useServiceBaseUrl/ine/evidenceapiservice/evidence/incident/34/count",
+    "path": "/apiproxy/mtp/useServiceBaseUrl/ine/evidenceapiservice/evidence/incident/34/count",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/ine/evidenceapiservice/evidence/incident/34/count",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/useServiceBaseUrl/ine/incidentgraphservice/incidentGraph/33?withGraphSimilarity=false",
+    "path": "/apiproxy/mtp/useServiceBaseUrl/ine/incidentgraphservice/incidentGraph/33?withGraphSimilarity=false",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/ine/incidentgraphservice/incidentGraph/33?withGraphSimilarity=false",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "GET",
+    "url": "https://security.microsoft.com/apiproxy/mtp/useServiceBaseUrl/ine/incidentgraphservice/incidentGraph/34?withGraphSimilarity=false",
+    "path": "/apiproxy/mtp/useServiceBaseUrl/ine/incidentgraphservice/incidentGraph/34?withGraphSimilarity=false",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/ine/incidentgraphservice/incidentGraph/34?withGraphSimilarity=false",
+    "status": 200,
+    "statusText": "OK"
+  },
+  {
+    "method": "POST",
+    "url": "https://security.microsoft.com/apiproxy/securityplatform/sentinelgraph/provisioning/checkTenant?api-version=2024-07-01&includeFeatures=true",
+    "path": "/apiproxy/securityplatform/sentinelgraph/provisioning/checkTenant?api-version=2024-07-01&includeFeatures=true",
+    "version": "v1.0",
+    "isProxy": true,
+    "publicApiUrl": "https://api.security.microsoft.com/api/provisioning/checkTenant?api-version=2024-07-01&includeFeatures=true",
+    "status": 200,
+    "statusText": "OK"
+  }
+]
