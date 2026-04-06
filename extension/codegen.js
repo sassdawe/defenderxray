@@ -3,13 +3,23 @@
  *
  * Pure code-generation utilities for Defender XRay.
  *
- * Converts a captured Microsoft Graph API request into a ready-to-run
- * script in one of four languages / SDKs:
+ * Converts a captured Microsoft API request into a ready-to-run script in one
+ * of four languages / SDKs.  Handles two request origins:
  *
- *   • PowerShell  – Microsoft Graph PowerShell SDK (Invoke-MgGraphRequest)
- *   • Python      – requests library + MSAL authentication
- *   • C#          – HttpClient + Azure.Identity (ClientSecretCredential)
- *   • JavaScript  – Microsoft Graph JavaScript SDK + @azure/identity
+ *   Direct Graph API (graph.microsoft.com)
+ *     PowerShell  – Microsoft Graph PowerShell SDK (Invoke-MgGraphRequest)
+ *     Python      – requests library + MSAL authentication
+ *     C#          – HttpClient + Azure.Identity (ClientSecretCredential)
+ *     JavaScript  – Microsoft Graph JavaScript SDK + @azure/identity
+ *
+ *   Defender XDR portal proxy (security.microsoft.com/apiproxy/*)
+ *     The portal routes internal calls through /apiproxy/{proxy}/{service}/{resource}.
+ *     The generated script targets the equivalent Microsoft 365 Defender REST API
+ *     at https://api.security.microsoft.com using the appropriate auth scope.
+ *     PowerShell  – MSAL.PS + Invoke-RestMethod
+ *     Python      – requests + MSAL (scope: api.security.microsoft.com/.default)
+ *     C#          – HttpClient + Azure.Identity (same, different scope)
+ *     JavaScript  – @azure/identity + fetch API
  *
  * Each generator function receives a `RequestEntry` object (see panel.js)
  * and returns a formatted, human-readable string ready to paste into an IDE.
@@ -24,17 +34,28 @@ const CodeGen = (() => {
     // ── URL helpers ──────────────────────────────────────────────────────
 
     /**
-     * Parse a Microsoft Graph API URL into its constituent parts.
+     * Parse a Microsoft API URL (Graph or Defender XDR portal proxy) into its
+     * constituent parts.
      *
-     * @param {string} rawUrl – Full URL, e.g.
-     *   "https://graph.microsoft.com/v1.0/users?$filter=startsWith(displayName,'A')"
+     * Handles two URL shapes:
+     *  1. Direct Graph API:
+     *       https://graph.microsoft.com/{version}/{resource}
+     *  2. Defender XDR portal proxy (MTP):
+     *       https://security.microsoft.com/apiproxy/{proxy}/{service}/{resource}
+     *     The {service} segment is an internal portal service name; it is stripped
+     *     to derive the equivalent Microsoft 365 Defender REST API path at
+     *     https://api.security.microsoft.com/api/{resource}.
+     *
+     * @param {string} rawUrl
      * @returns {{
-     *   version: string,        // "v1.0" | "beta"
-     *   resourcePath: string,   // "/users"  (without version prefix)
-     *   fullPath: string,       // "/v1.0/users"
-     *   params: Record<string, string>,  // OData / query params
+     *   version: string,          // "v1.0" | "beta"
+     *   resourcePath: string,     // "/{resource}" without version/proxy prefix
+     *   fullPath: string,         // full pathname as captured
+     *   isProxy: boolean,         // true for security.microsoft.com/apiproxy/* URLs
+     *   publicApiPath: string,    // "/v1.0/…" for Graph, "/api/…" for proxy
+     *   params: Record<string, string>,
      *   hasParams: boolean,
-     *   queryString: string     // "?$filter=..." (raw, already URL-encoded)
+     *   queryString: string,      // e.g. "?$filter=…"
      * }}
      */
     function parseGraphUrl(rawUrl) {
@@ -42,36 +63,60 @@ const CodeGen = (() => {
         try {
             urlObj = new URL(rawUrl);
         } catch {
-            // Fallback for malformed URLs
             return {
                 version: "v1.0",
                 resourcePath: rawUrl,
                 fullPath: rawUrl,
+                isProxy: false,
+                publicApiPath: rawUrl,
                 params: {},
                 hasParams: false,
                 queryString: "",
             };
         }
 
-        const segments = urlObj.pathname.split("/").filter(Boolean);
-        // Typical shape: ["v1.0", "users", ...]  or  ["beta", "security", ...]
-        const version = segments[0] || "v1.0";
-        const resourcePath = "/" + segments.slice(1).join("/");
-        const fullPath = urlObj.pathname;
-
         /** @type {Record<string, string>} */
         const params = {};
-        urlObj.searchParams.forEach((v, k) => {
-            params[k] = v;
-        });
+        urlObj.searchParams.forEach((v, k) => { params[k] = v; });
+        const hasParams = urlObj.searchParams.size > 0;
 
+        // ── Defender XDR portal proxy calls ──────────────────────────────────
+        // Path shape:  /apiproxy/{proxy}/{service}/{resource…}
+        // e.g.:        /apiproxy/mtp/incidentUpdate/incidents/123
+        // The {service} segment is an internal portal name; strip it together with
+        // the /apiproxy/{proxy}/ prefix to derive the public resource path.
+        if (urlObj.hostname === "security.microsoft.com" &&
+                urlObj.pathname.startsWith("/apiproxy/")) {
+            const segments = urlObj.pathname.split("/").filter(Boolean);
+            // segments: ["apiproxy", "{proxy}", "{service}", "{resource}", …]
+            const resourcePath = "/" + segments.slice(3).join("/");
+            return {
+                version: "v1.0",
+                resourcePath,
+                fullPath: urlObj.pathname,
+                isProxy: true,
+                publicApiPath: "/api" + resourcePath,
+                params,
+                hasParams,
+                queryString: urlObj.search,
+            };
+        }
+
+        // ── Direct Graph API call ─────────────────────────────────────────────
+        // Path shape:  /{version}/{resource…}
+        // e.g.:        /v1.0/security/incidents
+        const segments = urlObj.pathname.split("/").filter(Boolean);
+        const version = segments[0] || "v1.0";
+        const resourcePath = "/" + segments.slice(1).join("/");
         return {
             version,
             resourcePath,
-            fullPath,
+            fullPath: urlObj.pathname,
+            isProxy: false,
+            publicApiPath: urlObj.pathname,
             params,
-            hasParams: urlObj.searchParams.size > 0,
-            queryString: urlObj.search, // e.g. "?$filter=..."
+            hasParams,
+            queryString: urlObj.search,
         };
     }
 
@@ -137,32 +182,63 @@ const CodeGen = (() => {
     // ── Language generators ──────────────────────────────────────────────
 
     /**
-     * Generate a Microsoft Graph PowerShell SDK script.
+     * Generate a PowerShell script.
      *
-     * Uses `Invoke-MgGraphRequest` which works for every Graph endpoint
-     * without requiring cmdlet-per-resource knowledge.
+     * Direct Graph API calls use Connect-MgGraph + Invoke-MgGraphRequest.
+     * Portal proxy calls use MSAL.PS token acquisition + Invoke-RestMethod
+     * against the equivalent Microsoft 365 Defender REST API.
      *
      * @param {import('./panel.js').RequestEntry} req
      * @returns {string}
      */
     function generatePowerShell(req) {
-        const { method, url, requestBody } = req;
-        const uri = escapePsDoubleQuoted(url);
+        const { method, url, requestBody, isProxy, publicApiUrl } = req;
+        const targetUrl = isProxy && publicApiUrl ? publicApiUrl : url;
+        const uri = escapePsDoubleQuoted(targetUrl);
         const hasBody = !!requestBody && method !== "GET";
 
         const lines = [
             "# Generated by Defender XRay",
             `# ${method} ${url}`,
             "#",
-            "# Prerequisites",
-            "#   Install-Module Microsoft.Graph -Scope CurrentUser",
-            "",
-            "# Connect to Microsoft Graph (interactive, browser-based login).",
-            "# For unattended/app-only auth use:",
-            "#   Connect-MgGraph -TenantId <tenant-id> -ClientId <app-id> -CertificateThumbprint <thumb>",
-            "Connect-MgGraph",
-            "",
         ];
+
+        if (isProxy) {
+            lines.push(
+                "# NOTE: Captured as a Defender XDR portal proxy call.",
+                "# The script below targets the equivalent Microsoft 365 Defender REST API.",
+                "# Reference: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-supported",
+                "#",
+                "# Prerequisites",
+                "#   Install-Module MSAL.PS -Scope CurrentUser",
+                "",
+                "# Acquire a token for the Microsoft 365 Defender REST API.",
+                "Import-Module MSAL.PS",
+                "",
+                '$tokenResponse = Get-MsalToken `',
+                '    -TenantId "YOUR_TENANT_ID" `',
+                '    -ClientId "YOUR_CLIENT_ID" `',
+                '    -ClientSecret (ConvertTo-SecureString "YOUR_CLIENT_SECRET" -AsPlainText -Force) `',
+                '    -Scopes "https://api.security.microsoft.com/.default"',
+                "",
+                "$headers = @{",
+                '    Authorization = "Bearer $($tokenResponse.AccessToken)"',
+                '    "Content-Type" = "application/json"',
+                "}",
+                "",
+            );
+        } else {
+            lines.push(
+                "# Prerequisites",
+                "#   Install-Module Microsoft.Graph -Scope CurrentUser",
+                "",
+                "# Connect to Microsoft Graph (interactive, browser-based login).",
+                "# For unattended/app-only auth use:",
+                "#   Connect-MgGraph -TenantId <tenant-id> -ClientId <app-id> -CertificateThumbprint <thumb>",
+                "Connect-MgGraph",
+                "",
+            );
+        }
 
         if (hasBody) {
             lines.push("# Request body");
@@ -171,16 +247,27 @@ const CodeGen = (() => {
         }
 
         lines.push(`# ${method} ${req.path || url}`);
-        lines.push(`$response = Invoke-MgGraphRequest \``);
-        lines.push(`    -Method ${method} \``);
-        lines.push(`    -Uri "${uri}" \``);
 
-        if (hasBody) {
-            lines.push(`    -Body $body \``);
-            lines.push(`    -ContentType "application/json" \``);
+        if (isProxy) {
+            lines.push(`$response = Invoke-RestMethod \``);
+            lines.push(`    -Method ${method} \``);
+            lines.push(`    -Uri "${uri}" \``);
+            lines.push(`    -Headers $headers \``);
+            if (hasBody) {
+                lines.push(`    -Body $body \``);
+            }
+            lines.push(`    -ErrorAction Stop`);
+        } else {
+            lines.push(`$response = Invoke-MgGraphRequest \``);
+            lines.push(`    -Method ${method} \``);
+            lines.push(`    -Uri "${uri}" \``);
+            if (hasBody) {
+                lines.push(`    -Body $body \``);
+                lines.push(`    -ContentType "application/json" \``);
+            }
+            lines.push(`    -OutputType PSObject`);
         }
 
-        lines.push(`    -OutputType PSObject`);
         lines.push("");
         lines.push("# Display the response");
         lines.push("$response | ConvertTo-Json -Depth 10");
@@ -190,23 +277,41 @@ const CodeGen = (() => {
 
     /**
      * Generate a Python script using the `requests` library and MSAL for auth.
+     * The auth scope adjusts automatically for Graph vs MTP API calls.
      *
      * @param {import('./panel.js').RequestEntry} req
      * @returns {string}
      */
     function generatePython(req) {
-        const { method, url, requestBody } = req;
+        const { method, url, requestBody, isProxy, publicApiUrl } = req;
+        const targetUrl = isProxy && publicApiUrl ? publicApiUrl : url;
         const parsed = parseGraphUrl(url);
         const hasBody = !!requestBody && method !== "GET";
 
+        const authScope = isProxy
+            ? "https://api.security.microsoft.com/.default"
+            : "https://graph.microsoft.com/.default";
+
         // Split query params into a separate dict for readability
-        const baseUrl = url.split("?")[0];
+        const baseUrl = targetUrl.split("?")[0];
         const paramEntries = Object.entries(parsed.params);
 
         const lines = [
             "# Generated by Defender XRay",
             `# ${method} ${url}`,
             "#",
+        ];
+
+        if (isProxy) {
+            lines.push(
+                "# NOTE: Captured as a Defender XDR portal proxy call.",
+                "# The script below targets the equivalent Microsoft 365 Defender REST API.",
+                "# Reference: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-supported",
+                "#",
+            );
+        }
+
+        lines.push(
             "# Prerequisites",
             "#   pip install requests msal",
             "",
@@ -227,7 +332,7 @@ const CodeGen = (() => {
             ")",
             "",
             "token_response = app.acquire_token_for_client(",
-            '    scopes=["https://graph.microsoft.com/.default"]',
+            `    scopes=["${authScope}"]`,
             ")",
             'if "access_token" not in token_response:',
             '    raise RuntimeError(f"Could not acquire token: {token_response}")',
@@ -238,7 +343,7 @@ const CodeGen = (() => {
             "}",
             "",
             "# ── API call ─────────────────────────────────────────────────",
-        ];
+        );
 
         if (paramEntries.length > 0) {
             lines.push(`url = "${escapePyString(baseUrl)}"`);
@@ -248,7 +353,7 @@ const CodeGen = (() => {
             }
             lines.push("}");
         } else {
-            lines.push(`url = "${escapePyString(url)}"`);
+            lines.push(`url = "${escapePyString(targetUrl)}"`);
         }
 
         if (hasBody) {
@@ -285,19 +390,37 @@ const CodeGen = (() => {
     /**
      * Generate a C# script using HttpClient and Azure.Identity for auth.
      * Targets .NET 8 with top-level statements for brevity.
+     * The auth scope adjusts automatically for Graph vs MTP API calls.
      *
      * @param {import('./panel.js').RequestEntry} req
      * @returns {string}
      */
     function generateCSharp(req) {
-        const { method, url, requestBody } = req;
+        const { method, url, requestBody, isProxy, publicApiUrl } = req;
+        const targetUrl = isProxy && publicApiUrl ? publicApiUrl : url;
         const hasBody = !!requestBody && method !== "GET";
         const csMethod = method === "PATCH" ? "Patch" : _capitalize(method.toLowerCase());
+
+        const authScope = isProxy
+            ? "https://api.security.microsoft.com/.default"
+            : "https://graph.microsoft.com/.default";
 
         const lines = [
             "// Generated by Defender XRay",
             `// ${method} ${url}`,
             "//",
+        ];
+
+        if (isProxy) {
+            lines.push(
+                "// NOTE: Captured as a Defender XDR portal proxy call.",
+                "// The script below targets the equivalent Microsoft 365 Defender REST API.",
+                "// Reference: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-supported",
+                "//",
+            );
+        }
+
+        lines.push(
             "// Prerequisites (NuGet packages)",
             "//   dotnet add package Azure.Identity",
             "//   dotnet add package System.Net.Http.Json",
@@ -319,7 +442,7 @@ const CodeGen = (() => {
             "",
             "var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);",
             "var tokenRequest = new TokenRequestContext(",
-            '    new[] { "https://graph.microsoft.com/.default" }',
+            `    new[] { "${authScope}" }`,
             ");",
             "var token = await credential.GetTokenAsync(tokenRequest);",
             "",
@@ -328,9 +451,9 @@ const CodeGen = (() => {
             '    new AuthenticationHeaderValue("Bearer", token.Token);',
             "",
             "// ── API call ─────────────────────────────────────────────────",
-            `var url = @"${escapeCsVerbatim(url)}";`,
+            `var url = @"${escapeCsVerbatim(targetUrl)}";`,
             "",
-        ];
+        );
 
         if (hasBody) {
             const bodyStr = prettyJson(requestBody);
@@ -360,73 +483,133 @@ const CodeGen = (() => {
         lines.push("var formatted = JsonSerializer.Serialize(");
         lines.push("    JsonSerializer.Deserialize<JsonElement>(responseBody),");
         lines.push("    new JsonSerializerOptions { WriteIndented = true }");
-        lines.push(");")
+        lines.push(");");
         lines.push("Console.WriteLine(formatted);");
 
         return lines.join("\n");
     }
 
     /**
-     * Generate a JavaScript script using the Microsoft Graph JavaScript SDK.
+     * Generate a JavaScript script.
+     *
+     * Direct Graph API calls use the Microsoft Graph JavaScript SDK.
+     * Portal proxy calls use the fetch API against the equivalent Microsoft 365
+     * Defender REST API, since the Graph SDK only targets graph.microsoft.com.
      *
      * @param {import('./panel.js').RequestEntry} req
      * @returns {string}
      */
     function generateJavaScript(req) {
-        const { method, url, requestBody } = req;
+        const { method, url, requestBody, isProxy, publicApiUrl } = req;
+        const targetUrl = isProxy && publicApiUrl ? publicApiUrl : url;
         const parsed = parseGraphUrl(url);
-        // The Graph JS SDK's .api() accepts the path relative to graph.microsoft.com
-        const apiPath = escapeJsTemplate(parsed.fullPath + parsed.queryString);
         const hasBody = !!requestBody && method !== "GET";
 
         const lines = [
             "// Generated by Defender XRay",
             `// ${method} ${url}`,
             "//",
-            "// Prerequisites (npm packages)",
-            "//   npm install @microsoft/microsoft-graph-client",
-            "//   npm install @azure/identity",
-            "//   npm install @microsoft/microsoft-graph-client/authProviders/azureTokenCredentials",
-            "",
-            'import { Client } from "@microsoft/microsoft-graph-client";',
-            'import { ClientSecretCredential } from "@azure/identity";',
-            'import { TokenCredentialAuthenticationProvider }',
-            '    from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials";',
-            "",
-            "// ── Authentication ──────────────────────────────────────────",
-            "// Replace the placeholders below with your app registration details.",
-            "// Create an app at https://entra.microsoft.com > App registrations.",
-            'const tenantId     = "YOUR_TENANT_ID";',
-            'const clientId     = "YOUR_CLIENT_ID";',
-            'const clientSecret = "YOUR_CLIENT_SECRET"; // Use a certificate in production',
-            "",
-            "const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);",
-            "const authProvider = new TokenCredentialAuthenticationProvider(credential, {",
-            '    scopes: ["https://graph.microsoft.com/.default"],',
-            "});",
-            "const client = Client.initWithMiddleware({ authProvider });",
-            "",
-            "// ── API call ─────────────────────────────────────────────────",
         ];
 
-        if (hasBody) {
-            lines.push("const body = " + prettyJson(requestBody) + ";");
+        if (isProxy) {
+            // ── Portal proxy: use fetch + Azure.Identity directly ─────────────
+            lines.push(
+                "// NOTE: Captured as a Defender XDR portal proxy call.",
+                "// The script below targets the equivalent Microsoft 365 Defender REST API.",
+                "// Reference: https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-supported",
+                "//",
+                "// Prerequisites (npm packages)",
+                "//   npm install @azure/identity",
+                "",
+                'import { ClientSecretCredential } from "@azure/identity";',
+                "",
+                "// ── Authentication ──────────────────────────────────────────",
+                "// Replace the placeholders below with your app registration details.",
+                "// Create an app at https://entra.microsoft.com > App registrations.",
+                'const tenantId     = "YOUR_TENANT_ID";',
+                'const clientId     = "YOUR_CLIENT_ID";',
+                'const clientSecret = "YOUR_CLIENT_SECRET"; // Use a certificate in production',
+                "",
+                "const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);",
+                "const { token } = await credential.getToken(",
+                '    "https://api.security.microsoft.com/.default"',
+                ");",
+                "",
+                "// ── API call ─────────────────────────────────────────────────",
+            );
+
+            if (hasBody) {
+                lines.push("const body = " + prettyJson(requestBody) + ";");
+                lines.push("");
+            }
+
+            lines.push(`const response = await fetch("${escapeJsTemplate(targetUrl)}", {`);
+            lines.push(`    method: "${method}",`);
+            lines.push("    headers: {");
+            lines.push("        \"Authorization\": `Bearer ${token}`,");
+            lines.push('        "Content-Type": "application/json",');
+            lines.push("    },");
+            if (hasBody) {
+                lines.push("    body: JSON.stringify(body),");
+            }
+            lines.push("});");
             lines.push("");
-        }
-
-        const jsMethod = method.toLowerCase();
-
-        if (hasBody) {
-            lines.push(`const result = await client.api(\`${apiPath}\`).${jsMethod}(body);`);
-        } else if (method === "DELETE") {
-            lines.push(`await client.api(\`${apiPath}\`).delete();`);
-            lines.push("console.log('Deleted successfully');");
-            return lines.join("\n");
+            lines.push("if (!response.ok) {");
+            lines.push("    throw new Error(`Request failed: ${response.status} ${response.statusText}`);");
+            lines.push("}");
+            lines.push("const result = await response.json();");
+            lines.push("console.log(JSON.stringify(result, null, 2));");
         } else {
-            lines.push(`const result = await client.api(\`${apiPath}\`).get();`);
-        }
+            // ── Direct Graph API: use the Graph JavaScript SDK ────────────────
+            // The Graph JS SDK's .api() accepts the path relative to graph.microsoft.com
+            const apiPath = escapeJsTemplate(parsed.fullPath + parsed.queryString);
 
-        lines.push("console.log(JSON.stringify(result, null, 2));");
+            lines.push(
+                "// Prerequisites (npm packages)",
+                "//   npm install @microsoft/microsoft-graph-client",
+                "//   npm install @azure/identity",
+                "//   npm install @microsoft/microsoft-graph-client/authProviders/azureTokenCredentials",
+                "",
+                'import { Client } from "@microsoft/microsoft-graph-client";',
+                'import { ClientSecretCredential } from "@azure/identity";',
+                'import { TokenCredentialAuthenticationProvider }',
+                '    from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials";',
+                "",
+                "// ── Authentication ──────────────────────────────────────────",
+                "// Replace the placeholders below with your app registration details.",
+                "// Create an app at https://entra.microsoft.com > App registrations.",
+                'const tenantId     = "YOUR_TENANT_ID";',
+                'const clientId     = "YOUR_CLIENT_ID";',
+                'const clientSecret = "YOUR_CLIENT_SECRET"; // Use a certificate in production',
+                "",
+                "const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);",
+                "const authProvider = new TokenCredentialAuthenticationProvider(credential, {",
+                '    scopes: ["https://graph.microsoft.com/.default"],',
+                "});",
+                "const client = Client.initWithMiddleware({ authProvider });",
+                "",
+                "// ── API call ─────────────────────────────────────────────────",
+            );
+
+            if (hasBody) {
+                lines.push("const body = " + prettyJson(requestBody) + ";");
+                lines.push("");
+            }
+
+            const jsMethod = method.toLowerCase();
+
+            if (hasBody) {
+                lines.push(`const result = await client.api(\`${apiPath}\`).${jsMethod}(body);`);
+            } else if (method === "DELETE") {
+                lines.push(`await client.api(\`${apiPath}\`).delete();`);
+                lines.push("console.log('Deleted successfully');");
+                return lines.join("\n");
+            } else {
+                lines.push(`const result = await client.api(\`${apiPath}\`).get();`);
+            }
+
+            lines.push("console.log(JSON.stringify(result, null, 2));");
+        }
 
         return lines.join("\n");
     }

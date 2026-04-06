@@ -19,6 +19,8 @@
  *   url:             string,
  *   path:            string,
  *   version:         string,
+ *   isProxy:         boolean,
+ *   publicApiUrl:    string|null,
  *   status:          number,
  *   statusText:      string,
  *   durationMs:      number,
@@ -97,16 +99,21 @@
 
         const url = entry.request.url;
 
-        // Verify the request is to graph.microsoft.com by checking the
-        // hostname exactly — a substring check alone would be bypassable
-        // (e.g. "evil.com/graph.microsoft.com" would pass).
-        let hostname;
+        // Filter by exact hostname to avoid substring-match bypasses.
+        // Capture two origins:
+        //   • graph.microsoft.com              — direct Microsoft Graph API calls
+        //   • security.microsoft.com/apiproxy/ — Defender XDR portal proxy to MTP API
+        let urlObj;
         try {
-            hostname = new URL(url).hostname;
+            urlObj = new URL(url);
         } catch {
             return; // Ignore malformed URLs
         }
-        if (hostname !== "graph.microsoft.com") return;
+        const { hostname, pathname } = urlObj;
+        const isGraphApi  = hostname === "graph.microsoft.com";
+        const isProxyCall = hostname === "security.microsoft.com" &&
+                            pathname.startsWith("/apiproxy/");
+        if (!isGraphApi && !isProxyCall) return;
 
         const method = entry.request.method.toUpperCase();
         if (!["GET", "POST", "PATCH", "PUT", "DELETE"].includes(method)) return;
@@ -122,6 +129,10 @@
                 url,
                 path:            parsed.fullPath + parsed.queryString,
                 version:         parsed.version,
+                isProxy:         parsed.isProxy,
+                publicApiUrl:    parsed.isProxy
+                                     ? "https://api.security.microsoft.com" + parsed.publicApiPath + parsed.queryString
+                                     : null,
                 status:          entry.response.status,
                 statusText:      entry.response.statusText,
                 durationMs:      Math.round(entry.time),
@@ -238,7 +249,7 @@
         ovMethod.innerHTML    = `<span class="method-badge method-${req.method}">${escHtml(req.method)}</span>`;
         ovStatus.innerHTML    = `<span class="${statusCssClass(req.status)}">${req.status} ${escHtml(req.statusText)}</span>`;
         ovTime.textContent    = req.durationMs >= 0 ? `${req.durationMs} ms` : "–";
-        ovVersion.textContent = req.version;
+        ovVersion.textContent = req.isProxy ? "MTP API (portal proxy)" : req.version;
         ovStarted.textContent = req.startedDateTime ? formatDateTime(req.startedDateTime) : "–";
 
         // Request tab
