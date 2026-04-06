@@ -357,12 +357,10 @@ const CodeGen = (() => {
         lines.push("response.EnsureSuccessStatusCode();");
         lines.push("");
         lines.push("var responseBody = await response.Content.ReadAsStringAsync();");
-        lines.push(
-            "var formatted = JsonSerializer.Serialize(",
-            "    JsonSerializer.Deserialize<JsonElement>(responseBody),",
-            '    new JsonSerializerOptions { WriteIndented = true }',
-            ");",
-        );
+        lines.push("var formatted = JsonSerializer.Serialize(");
+        lines.push("    JsonSerializer.Deserialize<JsonElement>(responseBody),");
+        lines.push("    new JsonSerializerOptions { WriteIndented = true }");
+        lines.push(");")
         lines.push("Console.WriteLine(formatted);");
 
         return lines.join("\n");

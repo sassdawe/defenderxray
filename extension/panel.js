@@ -96,7 +96,17 @@
         if (!isRecording) return;
 
         const url = entry.request.url;
-        if (!url.includes("graph.microsoft.com")) return;
+
+        // Verify the request is to graph.microsoft.com by checking the
+        // hostname exactly — a substring check alone would be bypassable
+        // (e.g. "evil.com/graph.microsoft.com" would pass).
+        let hostname;
+        try {
+            hostname = new URL(url).hostname;
+        } catch {
+            return; // Ignore malformed URLs
+        }
+        if (hostname !== "graph.microsoft.com") return;
 
         const method = entry.request.method.toUpperCase();
         if (!["GET", "POST", "PATCH", "PUT", "DELETE"].includes(method)) return;
