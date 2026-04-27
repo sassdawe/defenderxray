@@ -1,0 +1,8 @@
+{
+  "name": "defenderxray",
+  "version": "1.0.3",
+  "private": true,
+  "scripts": {
+    "test": "node --test extension/test/*.test.js"
+  }
+}

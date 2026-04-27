@@ -1,0 +1,23 @@
+{
+  "id": 1,
+  "method": "POST",
+  "url": "https://graph.microsoft.com/v1.0/security/incidents?token=abc",
+  "path": "/v1.0/security/incidents?api_key=xyz",
+  "version": "v1.0",
+  "isProxy": false,
+  "publicApiUrl": "https://graph.microsoft.com/v1.0/security/incidents?session=aaa",
+  "status": 200,
+  "statusText": "OK",
+  "durationMs": 45,
+  "startedDateTime": "2026-04-07T00:00:00Z",
+  "requestHeaders": [
+    { "name": "Authorization", "value": "Bearer topsecret" },
+    { "name": "Content-Type", "value": "application/json" }
+  ],
+  "requestBody": "{\"clientSecret\":\"supersecret\",\"keep\":true}",
+  "responseHeaders": [
+    { "name": "Set-Cookie", "value": "Auth=xyz" },
+    { "name": "Content-Length", "value": "12" }
+  ],
+  "responseBody": "{\"accessToken\":\"res-secret\",\"value\":12}"
+}

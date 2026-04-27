@@ -1,0 +1,12 @@
+{
+  "sensitive": [
+    { "name": "Authorization", "value": "Bearer abc.def" },
+    { "name": "cookie", "value": "sessionId=abc123" },
+    { "name": "Set-Cookie", "value": "authToken=secret" },
+    { "name": "X-Api-Key", "value": "key-123" }
+  ],
+  "nonSensitive": [
+    { "name": "Content-Type", "value": "application/json" },
+    { "name": "Content-Length", "value": "12" }
+  ]
+}

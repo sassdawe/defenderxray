@@ -222,6 +222,19 @@ extension/
 - Authorization header values are **redacted** (`Bearer [REDACTED]`) in the Request/Response header display to prevent accidental token leakage in screenshots.
 - Generated code snippets use **placeholder** credential values (`YOUR_TENANT_ID`, etc.) — they never embed the captured token.
 
+## Regression tests
+
+Redaction behavior is covered by a Node-native regression suite.
+
+1. Ensure Node.js is installed.
+2. From the repository root, run:
+
+```bash
+npm test
+```
+
+The suite validates that sensitive session data (tokens, cookies, auth/session fields) is consistently redacted in shared sanitizer functions used by UI details and export flows.
+
 ---
 
 ## License

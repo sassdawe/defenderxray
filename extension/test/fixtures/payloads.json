@@ -1,0 +1,21 @@
+{
+  "nestedJson": {
+    "id": "evt-1",
+    "auth": {
+      "accessToken": "secret-access",
+      "refreshToken": "secret-refresh"
+    },
+    "nested": [
+      { "sessionId": "sess-1" },
+      { "keep": "ok" }
+    ],
+    "profile": {
+      "displayName": "Example User"
+    }
+  },
+  "nonJsonRaw": "Authorization: Bearer verysecrettoken\\napi_key=abc123",
+  "arrayJson": [
+    { "api_key": "array-key-1", "name": "first" },
+    { "token": "array-token-2", "name": "second" }
+  ]
+}

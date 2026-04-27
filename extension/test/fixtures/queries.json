@@ -1,0 +1,5 @@
+{
+  "absoluteUrl": "https://graph.microsoft.com/v1.0/security/incidents?access_token=abc&$top=10&sessionId=s1",
+  "relativePath": "/v1.0/security/incidents?api_key=xyz&$count=true",
+  "multiValue": "https://example.test/path?token=one&token=two&keep=ok"
+}

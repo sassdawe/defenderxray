@@ -46,6 +46,16 @@
     /** Whether the extension is actively recording new requests. */
     let isRecording = true;
 
+    if (!globalThis.Redaction) {
+        throw new Error("Redaction module missing. Ensure redaction.js loads before panel.js.");
+    }
+
+    const {
+        sanitizeRequestEntry,
+        sanitizeHeaderValue,
+        redactSensitiveQueryParams,
+    } = globalThis.Redaction;
+
     // ── DOM references ───────────────────────────────────────────────────
 
     const btnCapture      = document.getElementById("btn-capture");
@@ -266,13 +276,16 @@
         ovVersion.textContent = req.isProxy ? "MTP API (portal proxy)" : req.version;
         ovStarted.textContent = req.startedDateTime ? formatDateTime(req.startedDateTime) : "–";
 
+        // Use one sanitizer policy for UI detail panes and exports.
+        const sanitized = sanitizeRequestEntry(req);
+
         // Request tab
-        reqHeaders.querySelector("code").textContent = formatHeaders(req.requestHeaders);
-        reqBody.querySelector("code").textContent    = req.requestBody ? prettyJson(req.requestBody) : "(no body)";
+        reqHeaders.querySelector("code").textContent = formatHeaders(sanitized.requestHeaders);
+        reqBody.querySelector("code").textContent    = sanitized.requestBody ? prettyJson(sanitized.requestBody) : "(no body)";
 
         // Response tab
-        resHeaders.querySelector("code").textContent = formatHeaders(req.responseHeaders);
-        resBody.querySelector("code").textContent    = req.responseBody ? prettyJson(req.responseBody) : "(no body)";
+        resHeaders.querySelector("code").textContent = formatHeaders(sanitized.responseHeaders);
+        resBody.querySelector("code").textContent    = sanitized.responseBody ? prettyJson(sanitized.responseBody) : "(no body)";
 
         // Code tab – regenerate with the currently selected language
         refreshCode(req);
@@ -349,7 +362,8 @@
     function exportToJson() {
         if (captured.length === 0) return;
 
-        const data = JSON.stringify(captured, null, 2);
+        const safeCaptured = captured.map(sanitizeRequestEntry);
+        const data = JSON.stringify(safeCaptured, null, 2);
         const blob = new Blob([data], { type: "application/json" });
         const url  = URL.createObjectURL(blob);
         const a    = document.createElement("a");
@@ -373,11 +387,11 @@
         const limited = captured.map(function (req) {
             return {
                 method:       req.method,
-                url:          req.url,
-                path:         req.path,
+                url:          redactSensitiveQueryParams(req.url),
+                path:         redactSensitiveQueryParams(req.path),
                 version:      req.version,
                 isProxy:      req.isProxy,
-                publicApiUrl: req.publicApiUrl,
+                publicApiUrl: req.publicApiUrl ? redactSensitiveQueryParams(req.publicApiUrl) : null,
                 status:       req.status,
                 statusText:   req.statusText,
             };
@@ -465,10 +479,7 @@
         if (!headers || headers.length === 0) return "(none)";
         return headers
             .map(function (h) {
-                // Redact Bearer tokens so screenshots stay safe to share
-                const value = /^authorization$/i.test(h.name)
-                    ? h.value.replace(/Bearer\s+[\w.-]+/i, "Bearer [REDACTED]")
-                    : h.value;
+                const value = sanitizeHeaderValue(h.name, h.value);
                 return `${h.name}: ${value}`;
             })
             .join("\n");
